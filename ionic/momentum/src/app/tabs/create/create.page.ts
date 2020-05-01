@@ -1,5 +1,10 @@
 import { Component, OnInit } from '@angular/core';
+import { DomSanitizer } from '@angular/platform-browser';
+import { Plugins, CameraResultType, CameraSource } from '@capacitor/core';
+
 import { PostService } from 'src/app/services/post.service';
+import { AuthService } from 'src/app/services/auth.service';
+import { AlertController, LoadingController, NavController } from '@ionic/angular';
 
 @Component({
   selector: 'app-create',
@@ -8,61 +13,125 @@ import { PostService } from 'src/app/services/post.service';
 })
 export class CreatePage implements OnInit {
 
-  constructor(private postService: PostService) { }
+  user: any;
+  displayPhoto: any;
+  file: any;
+  description: string;
+  loadingIndicator: any;
+  loading = false;
+
+  constructor(private authService: AuthService,
+              private postService: PostService,
+              private sanitizer: DomSanitizer,
+              private alertCtrl: AlertController,
+              private loadingCtrl: LoadingController,
+              private navCtrl: NavController) { }
 
   ngOnInit() {
-    // this.createPost();
-    this.getPosts();
-    this.getPost();
-    // this.deletePost();
-    // this.updatePost();
-  }
-
-  createPost() {
-    const post = {
-      owner: 'asdfasdfasdf',
-      likes: 1200,
-      description: 'Lorem ipsum dolor sit amet consectetur, adipisicing elit. Fugiat, hic nostrum. Impedit maiores perspiciatis consequuntur dolorum ullam, nulla saepe quidem.'
-    };
-
-    this.postService.createPost(post).then(() => {
-      console.log('Post created');
-    }).catch((error) => {
-      console.log(error);
+    this.authService.user$.subscribe((user) => {
+      this.user = user[0];
     });
   }
 
-  getPosts() {
-    this.postService.getPosts().subscribe((posts) => {
-      console.log(posts);
+  async takePicture() {
+    const image = await Plugins.Camera.getPhoto({
+      quality: 100,
+      allowEditing: false,
+      resultType: CameraResultType.Base64,
+      source: CameraSource.Prompt
     });
+
+    const base64 = `data:image/${image.format};base64, ${image.base64String}`;
+    this.displayPhoto = this.sanitizer.bypassSecurityTrustResourceUrl(base64);
+
+    const imageBlob = this.base64toBlob(image.base64String);
+    this.file = new File([imageBlob], 'test.png', { type: 'image/png' });
   }
 
-  getPost() {
-    this.postService.getPost('9UgGvGQC6nH5PofrdeYi').subscribe((post) => {
-      console.log(post);
-    });
+  base64toBlob(dataURI: string) {
+    const byteString = window.atob(dataURI);
+    const arrayBuffer = new ArrayBuffer(byteString.length);
+    const int8Array = new Uint8Array(arrayBuffer);
+    for (let i = 0; i < byteString.length; i++) {
+      int8Array[i] = byteString.charCodeAt(i);
+    }
+    const blob = new Blob([int8Array], { type: 'image/png' });
+
+    return blob;
+ }
+
+  async createPost() {
+    await this.presentLoading('Sharing your brand new post...');
+
+    if (this.description !== undefined && this.file !== undefined) {
+      const newPost = {
+        postId: null,
+        username: this.user.username,
+        description: this.description,
+        pictureUrl: null,
+        createdAt: Date.now(),
+        tags: [],
+        likes: [],
+        likesCount: 0
+      };
+
+      this.postService.createPost(newPost, this.file).then(() => {
+        this.dismissLoading();
+        this.presentAlertConfirm('Done!', 'Your post has been shared successfully.');
+      }).catch((error) => {
+        this.dismissLoading();
+        this.presentAlert('Error', error.message);
+      });
+    } else {
+      this.dismissLoading();
+      this.presentAlert('Error', 'Please enter a description and a valid image.');
+    }
   }
 
-  deletePost() {
-    this.postService.deletePost('6wr3B4xo0CmKvBDXEjs7').then(() => {
-      console.log('Post deleted');
-    }).catch((error) => {
-      console.log(error);
+  async presentLoading(body: string) {
+    this.loadingIndicator = await this.loadingCtrl.create({
+      message: body
     });
+    this.loading = true;
+    await this.loadingIndicator.present();
   }
 
-  updatePost() {
-    const updatedPost = {
-      owner: 'edited',
-      likes: 1200,
-      description: 'nulla saepe quidem.'
-    };
+  async dismissLoading() {
+    this.loading = false;
+    await this.loadingIndicator.dismiss();
+  }
 
-    this.postService.updatePost('9UgGvGQC6nH5PofrdeYi', updatedPost).then(() => {
-      console.log('Post updated');
-    }).catch((error) => {
-      console.log(error);
+  async presentAlert(title: string, body: string) {
+    const alert = await this.alertCtrl.create({
+      header: title,
+      message: body,
+      buttons: ['Got It']
     });
+
+    await alert.present();
+  }
+
+  async presentAlertConfirm(title: string, body: string) {
+    const alert = await this.alertCtrl.create({
+      header: title,
+      message: body,
+      buttons: [
+        {
+          text: 'Got It',
+          handler: () => {
+            this.resetView();
+            this.navCtrl.navigateRoot(['tabs']);
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  resetView(): void {
+    this.description = undefined;
+    this.file = undefined;
+    this.displayPhoto = undefined;
   }
 }

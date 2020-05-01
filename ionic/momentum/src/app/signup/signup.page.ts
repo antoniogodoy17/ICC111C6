@@ -4,6 +4,7 @@ import { NavController, AlertController, LoadingController } from '@ionic/angula
 import { AuthService } from '../services/auth.service';
 import { UserService } from '../services/user.service';
 import { take } from 'rxjs/operators';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-signup',
@@ -19,19 +20,26 @@ export class SignupPage implements OnInit {
   constructor(private userService: UserService,
               private authService: AuthService,
               private navCtrl: NavController,
+              private router: Router,
               private alertCtrl: AlertController,
-              private loadingCtrl: LoadingController) {
-    this.authService.user$.subscribe((user) => {
-      console.log('signup constructor');
-      if (user) {
-        this.navCtrl.navigateRoot(['tabs']);
-      }
-    }, take(1));
-  }
+              private loadingCtrl: LoadingController) { }
 
   ngOnInit() {
     this.initForm();
-    this.createLoading();
+
+    const navigationId = this.router.getCurrentNavigation().id;
+
+    if (navigationId === 1) {
+      this.presentLoading('Loading...');
+      this.authService.user$.pipe(take(1)).subscribe((user) => {
+        setTimeout(() => {
+          this.dismissLoading();
+        }, 200);
+        if (user) {
+          this.navCtrl.navigateRoot(['tabs']);
+        }
+      });
+    }
   }
 
   initForm(): void {
@@ -45,7 +53,7 @@ export class SignupPage implements OnInit {
   }
 
   async onSubmit(): Promise<void> {
-    this.presentLoading();
+    await this.presentLoading('Authenticating you...');
 
     if (this.signupForm.valid) {
       const email = this.signupForm.controls.email.value;
@@ -54,7 +62,7 @@ export class SignupPage implements OnInit {
       const name = this.signupForm.controls.name.value;
 
       try {
-        const exists = await this.userService.usernameExists(username);
+        await this.userService.usernameExists(username);
         const credentials = await this.authService.signup(email, password);
 
         const user = {
@@ -64,8 +72,8 @@ export class SignupPage implements OnInit {
           name,
         };
 
-        const createdUser = await this.userService.createUser(user);
-        const logout = await this.authService.logout();
+        await this.userService.createUser(user);
+        await this.authService.logout();
         this.dismissLoading();
         this.presentAlertConfirm('Welcome aboard!', 'Your account has been created successfully.');
       } catch (error) {
@@ -83,13 +91,10 @@ export class SignupPage implements OnInit {
     this.navCtrl.navigateBack(['']);
   }
 
-  async createLoading() {
+  async presentLoading(body: string) {
     this.loadingIndicator = await this.loadingCtrl.create({
-      message: 'Authenticating you...'
+      message: body
     });
-  }
-
-  async presentLoading() {
     this.loading = true;
     await this.loadingIndicator.present();
   }

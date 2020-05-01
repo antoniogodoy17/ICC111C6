@@ -1,0 +1,23 @@
+ion-content {
+    --padding-start: 16px;
+    --padding-end: 16px;
+
+    ion-card {
+        --padding-start: 0;
+        --padding-end: 0;
+        --padding-top: 0;
+        --padding-bottom: 0;
+        margin-left: 0;
+        margin-right: 0;
+
+        ion-card-content {
+            ion-textarea {
+                --padding-top: 0;
+                --padding-bottom: 0;
+                --padding-start: 0;
+                --padding-end: 0;
+                margin: 0;
+            }
+        }
+    }
+}

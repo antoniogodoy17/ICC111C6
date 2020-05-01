@@ -6,12 +6,12 @@
 
 <ion-content>
   <ion-card *ngFor="let post of posts">
-    <img [src]="post.imageUrl"/>
+    <img [src]="post.pictureUrl"/>
     <ion-card-header>
       <ion-card-subtitle>@{{ post.username }}</ion-card-subtitle>
       <ion-card-subtitle>
         <ion-icon name="heart-outline"></ion-icon>
-        {{ post.likes | number }} likes
+        {{ post.likesCount | number }} {{ post.likesCount === 1 ? 'like' : 'likes' }}
       </ion-card-subtitle>
     </ion-card-header>
   
