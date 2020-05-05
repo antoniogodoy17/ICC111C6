@@ -58,7 +58,7 @@ export class SignupPage implements OnInit {
     if (this.signupForm.valid) {
       const email = this.signupForm.controls.email.value;
       const password = this.signupForm.controls.password.value;
-      const username = this.signupForm.controls.username.value;
+      const username = this.signupForm.controls.username.value.toLowerCase();
       const name = this.signupForm.controls.name.value;
 
       try {
@@ -73,6 +73,7 @@ export class SignupPage implements OnInit {
         };
 
         await this.userService.createUser(user);
+        await this.userService.createUsername(user);
         await this.authService.logout();
         this.dismissLoading();
         this.presentAlertConfirm('Welcome aboard!', 'Your account has been created successfully.');

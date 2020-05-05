@@ -54,7 +54,7 @@ const routes: Routes = [
           {
             path: 'post/:postId',
             loadChildren: () => import('./post-detail/post-detail.module').then( m => m.PostDetailPageModule)
-          }
+          },
         ]
       },
       {

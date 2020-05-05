@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { NavController } from '@ionic/angular';
 import { AuthService } from 'src/app/services/auth.service';
+import { PostService } from 'src/app/services/post.service';
 
 @Component({
   selector: 'app-profile',
@@ -10,43 +11,24 @@ import { AuthService } from 'src/app/services/auth.service';
 })
 export class ProfilePage implements OnInit {
 
-  posts = [
-    {
-      imageUrl: 'https://live.staticflickr.com/7380/10865554463_967e33332c_b.jpg',
-      username: 'antoniog',
-      likes: 1200,
-      description: "Keep close to Nature's heart... and break clear away, once in awhile, and climb a mountain or spend a week in the woods. Wash your spirit clean."
-    },
-    {
-      imageUrl: 'https://live.staticflickr.com/7380/10865554463_967e33332c_b.jpg',
-      username: 'antoniog',
-      likes: 1200,
-      description: "Keep close to Nature's heart... and break clear away, once in awhile, and climb a mountain or spend a week in the woods. Wash your spirit clean."
-    },
-    {
-      imageUrl: 'https://live.staticflickr.com/7380/10865554463_967e33332c_b.jpg',
-      username: 'antoniog',
-      likes: 1200,
-      description: "Keep close to Nature's heart... and break clear away, once in awhile, and climb a mountain or spend a week in the woods. Wash your spirit clean."
-    },
-    {
-      imageUrl: 'https://live.staticflickr.com/7380/10865554463_967e33332c_b.jpg',
-      username: 'antoniog',
-      likes: 1200,
-      description: "Keep close to Nature's heart... and break clear away, once in awhile, and climb a mountain or spend a week in the woods. Wash your spirit clean."
-    },
-    {
-      imageUrl: 'https://live.staticflickr.com/7380/10865554463_967e33332c_b.jpg',
-      username: 'antoniog',
-      likes: 1200,
-      description: "Keep close to Nature's heart... and break clear away, once in awhile, and climb a mountain or spend a week in the woods. Wash your spirit clean."
-    },
-  ];
+  user: any;
+  posts: any[];
 
   constructor(private authService: AuthService,
+              private postService: PostService,
               private navCtrl: NavController) { }
 
   ngOnInit() {
+    this.authService.user$.subscribe((user: any) => {
+      this.user = user;
+      this.getPosts();
+    });
+  }
+
+  getPosts() {
+    this.postService.getPostsByUser(this.user.id).subscribe((posts: any[]) => {
+      this.posts = posts;
+    });
   }
 
   goToPost(postId: string) {

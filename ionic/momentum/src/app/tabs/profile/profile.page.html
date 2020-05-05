@@ -1,12 +1,19 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="primary">
+    <ion-buttons slot="start">
+      <ion-button>
+        <ion-icon slot="icon-only" name="settings-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+
+    <ion-title class="ion-text-center">{{ user?.username }}</ion-title>
+
+    <ion-buttons slot="end">
       <ion-button (click)="logout()">
         <ion-icon slot="icon-only" name="exit-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
 
-    <ion-title>antoniog</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -23,13 +30,13 @@
 
     <ion-row>
       <ion-col size="12" class="ion-text-center">
-        Antonio Godoy
+        {{ user?.name }}
       </ion-col>
     </ion-row>
 
     <ion-row>
       <ion-col size="12" class="ion-text-center">
-        @antoniog
+        @{{ user?.username }}
       </ion-col>
     </ion-row>
   </ion-grid>
@@ -42,22 +49,16 @@
     </ion-row>
 
     <ion-row>
-      <ion-col size="4" class="ion-text-center">10</ion-col>
-      <ion-col size="4" class="ion-text-center">5,000</ion-col>
-      <ion-col size="4" class="ion-text-center">1</ion-col>
-    </ion-row>
-
-    <ion-row>
-      <ion-col size="12">
-        <ion-button expand="block" fill="outline">Edit Settings</ion-button>
-      </ion-col>
+      <ion-col size="4" class="ion-text-center">{{ user?.postsCount || 0 }}</ion-col>
+      <ion-col size="4" class="ion-text-center">{{ user?.followersCount || 0 }}</ion-col>
+      <ion-col size="4" class="ion-text-center">{{ user?.followingCount  || 0 }}</ion-col>
     </ion-row>
   </ion-grid>
 
   <ion-grid>
     <ion-row>
       <ion-col size="4" *ngFor="let post of posts">
-        <img [src]="post.imageUrl" (click)="goToPost('1')">
+        <img [src]="post?.pictureUrl" (click)="goToPost(post?.id)">
       </ion-col>
     </ion-row>
   </ion-grid>

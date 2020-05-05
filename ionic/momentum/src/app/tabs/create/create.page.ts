@@ -29,7 +29,7 @@ export class CreatePage implements OnInit {
 
   ngOnInit() {
     this.authService.user$.subscribe((user) => {
-      this.user = user[0];
+      this.user = user;
     });
   }
 
@@ -65,7 +65,8 @@ export class CreatePage implements OnInit {
 
     if (this.description !== undefined && this.file !== undefined) {
       const newPost = {
-        postId: null,
+        id: null,
+        uid: this.user.id,
         username: this.user.username,
         description: this.description,
         pictureUrl: null,

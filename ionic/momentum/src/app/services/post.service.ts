@@ -16,9 +16,9 @@ export class PostService {
       try {
         const postId = this.afs.createId();
         const extension = image.type.split('/')[1];
-        const filePath = `posts/${post.username}/${postId}.${extension}`;
+        const filePath = `posts/${post.uid}/${postId}.${extension}`;
 
-        post.postId = postId;
+        post.id = postId;
         await this.afs.doc(`posts/${postId}`).set(post);
         await this.uploadPostImage(post, image);
         post.pictureUrl = await this.afStorage.ref(filePath).getDownloadURL().toPromise()
@@ -33,7 +33,7 @@ export class PostService {
 
   uploadPostImage(post: any, image: File) {
     const extension = image.type.split('/')[1];
-    const filePath = `posts/${post.username}/${post.postId}.${extension}`;
+    const filePath = `posts/${post.uid}/${post.id}.${extension}`;
     const task = this.afStorage.upload(filePath, image);
 
     return task.snapshotChanges().toPromise();
@@ -41,23 +41,22 @@ export class PostService {
 
   getPosts() {
     return this.afs.collection('posts').snapshotChanges().pipe(
-      map(docs => docs.map(doc => {
-        const post = doc.payload.doc.data() as any;
-        const id = doc.payload.doc.id;
-
-        return { id, ...post };
-      }))
+      map(docs => docs.map(doc => doc.payload.doc.data()))
     );
+  }
+
+  getPostsByUser(id: string) {
+    return this.afs.collection('posts', ref => ref
+      .where('uid', '==', id))
+      .snapshotChanges()
+      .pipe(
+        map(docs => docs.map(doc => doc.payload.doc.data()))
+      );
   }
 
   getPost(postId: string) {
     return this.afs.doc(`posts/${postId}`).snapshotChanges().pipe(
-      map(doc => {
-        const post = doc.payload.data() as any;
-        const id = doc.payload.id;
-
-        return { id, ...post };
-      })
+      map(doc => doc.payload.data())
     );
 
     // return this.afs.collection('posts', ref => ref.where('likes', '>=', 1200).orderBy('likes', 'desc'))

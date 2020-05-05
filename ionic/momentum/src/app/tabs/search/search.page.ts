@@ -16,7 +16,7 @@ export class SearchPage implements OnInit {
   }
 
   search(event: any) {
-    const username = event.detail.value;
+    const username = event.detail.value.toLowerCase();
 
     if (username.length > 0) {
       this.userService.searchUsers(username).subscribe((users) => {
