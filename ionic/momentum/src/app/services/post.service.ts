@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore';
-import { map } from 'rxjs/operators';
+import { map, take } from 'rxjs/operators';
 import { AngularFireStorage } from '@angular/fire/storage';
 
 @Injectable({
@@ -52,6 +52,34 @@ export class PostService {
       .pipe(
         map(docs => docs.map(doc => doc.payload.doc.data()))
       );
+  }
+
+  getPostsByUserAndPage(uid: string, last: any, pageSize: number) {
+    const field = 'createdAt';
+    const order = 'desc';
+
+    if (last) {
+      return this.afs.collection('posts', ref => ref
+        .where('uid', '==', uid)
+        .orderBy(field, order)
+        .startAfter(last[field])
+        .limit(pageSize))
+        .snapshotChanges()
+        .pipe(
+          take(1),
+          map(docs => docs.map(doc => doc.payload.doc.data()))
+        );
+    } else {
+      return this.afs.collection('posts', ref => ref
+        .where('uid', '==', uid)
+        .orderBy(field, order)
+        .limit(pageSize))
+        .snapshotChanges()
+        .pipe(
+          take(1),
+          map(docs => docs.map(doc => doc.payload.doc.data()))
+        );
+    }
   }
 
   getPost(postId: string) {

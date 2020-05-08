@@ -1,16 +1,11 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-button>
-        <ion-icon slot="icon-only" name="settings-outline"></ion-icon>
-      </ion-button>
-    </ion-buttons>
 
     <ion-title class="ion-text-center">{{ user?.username }}</ion-title>
 
     <ion-buttons slot="end">
-      <ion-button (click)="logout()">
-        <ion-icon slot="icon-only" name="exit-outline"></ion-icon>
+      <ion-button>
+        <ion-icon slot="icon-only" name="menu-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
 
@@ -18,6 +13,15 @@
 </ion-header>
 
 <ion-content>
+
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content
+      pullingIcon="chevron-down-circle-outline"
+      pullingText="Pull to refresh"
+      refreshingSpinner="circles"
+      refreshingText="Refreshing...">
+    </ion-refresher-content>
+  </ion-refresher>
 
   <ion-grid>
     <ion-row>
@@ -55,12 +59,23 @@
     </ion-row>
   </ion-grid>
 
-  <ion-grid>
-    <ion-row>
-      <ion-col size="4" *ngFor="let post of posts">
-        <img [src]="post?.pictureUrl" (click)="goToPost(post?.id)">
-      </ion-col>
-    </ion-row>
-  </ion-grid>
+  <ion-list>
+    <ion-grid>
+      <ion-row>
+        <ion-col size="4" *ngFor="let post of posts">
+          <ion-thumbnail>
+            <img [src]="post?.pictureUrl" (click)="goToPost(post?.id)">
+          </ion-thumbnail>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ion-list>
+
+  <ion-infinite-scroll (ionInfinite)="loadMorePosts($event)">
+    <ion-infinite-scroll-content
+      loadingSpinner="bubbles"
+      loadingText="Loading more data...">
+    </ion-infinite-scroll-content>
+  </ion-infinite-scroll>
 
 </ion-content>

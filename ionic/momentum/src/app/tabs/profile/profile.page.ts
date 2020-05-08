@@ -1,6 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
-import { NavController } from '@ionic/angular';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { NavController, IonInfiniteScroll } from '@ionic/angular';
 import { AuthService } from 'src/app/services/auth.service';
 import { PostService } from 'src/app/services/post.service';
 
@@ -10,9 +9,12 @@ import { PostService } from 'src/app/services/post.service';
   styleUrls: ['./profile.page.scss'],
 })
 export class ProfilePage implements OnInit {
+  @ViewChild(IonInfiniteScroll, { static: false }) infiniteScroll: IonInfiniteScroll;
 
   user: any;
   posts: any[];
+  pageSize = 9;
+  upToDate = false;
 
   constructor(private authService: AuthService,
               private postService: PostService,
@@ -26,9 +28,34 @@ export class ProfilePage implements OnInit {
   }
 
   getPosts() {
-    this.postService.getPostsByUser(this.user.id).subscribe((posts: any[]) => {
+    this.postService.getPostsByUserAndPage(this.user.id, null, this.pageSize).subscribe((posts: any[]) => {
       this.posts = posts;
+      this.upToDate = posts.length < this.pageSize;
+      this.infiniteScroll.disabled = this.upToDate;
+      console.log(this.infiniteScroll.disabled);
     });
+  }
+
+  loadMorePosts(event: any) {
+    if (!this.upToDate) {
+      const lastPost = this.posts[this.posts.length - 1];
+
+      setTimeout(() => {
+        this.postService.getPostsByUserAndPage(this.user.id, lastPost, this.pageSize).subscribe((posts: any[]) => {
+          this.posts = this.posts.concat(posts);
+          this.upToDate = posts.length < this.pageSize;
+          this.infiniteScroll.disabled = this.upToDate;
+          event.target.complete();
+        });
+      }, 1000);
+    }
+  }
+
+  refresh(event: any) {
+    setTimeout(() => {
+      this.getPosts();
+      event.target.complete();
+    }, 1000);
   }
 
   goToPost(postId: string) {
