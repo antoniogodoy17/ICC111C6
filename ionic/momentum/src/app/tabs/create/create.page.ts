@@ -45,7 +45,7 @@ export class CreatePage implements OnInit {
     this.displayPhoto = this.sanitizer.bypassSecurityTrustResourceUrl(base64);
 
     const imageBlob = this.base64toBlob(image.base64String);
-    this.file = new File([imageBlob], 'test.png', { type: 'image/png' });
+    this.file = new File([imageBlob], 'test.jpeg', { type: 'image/jpeg' });
   }
 
   base64toBlob(dataURI: string) {
@@ -55,7 +55,7 @@ export class CreatePage implements OnInit {
     for (let i = 0; i < byteString.length; i++) {
       int8Array[i] = byteString.charCodeAt(i);
     }
-    const blob = new Blob([int8Array], { type: 'image/png' });
+    const blob = new Blob([int8Array], { type: 'image/jpeg' });
 
     return blob;
  }

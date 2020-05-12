@@ -2,27 +2,35 @@ import { Injectable } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { map, take } from 'rxjs/operators';
 import { AngularFireStorage } from '@angular/fire/storage';
+import { firestore } from 'firebase/app';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PostService {
+  firestore: any;
 
   constructor(private afs: AngularFirestore,
               private afStorage: AngularFireStorage) { }
 
-  createPost(post: any, image: File) {
+  async createPost(post: any, image: File) {
     return new Promise(async (resolve, reject) => {
       try {
         const postId = this.afs.createId();
-        const extension = image.type.split('/')[1];
-        const filePath = `posts/${post.uid}/${postId}.${extension}`;
+        const filePath = `posts/${post.uid}/${postId}.jpeg`;
 
         post.id = postId;
-        await this.afs.doc(`posts/${postId}`).set(post);
         await this.uploadPostImage(post, image);
-        post.pictureUrl = await this.afStorage.ref(filePath).getDownloadURL().toPromise()
-        await this.updatePost(postId, post);
+
+        await this.afs.firestore.runTransaction(async transaction => {
+          const postRef = this.afs.doc(`posts/${postId}`).ref;
+          const userRef = this.afs.doc(`users/${post.uid}`).ref;
+          const increment = firestore.FieldValue.increment(1);
+
+          post.pictureUrl = await this.afStorage.ref(filePath).getDownloadURL().toPromise()
+          transaction.set(postRef, post);
+          transaction.update(userRef, { postsCount: increment });
+        });
 
         resolve(true);
       } catch (error) {
@@ -32,8 +40,7 @@ export class PostService {
   }
 
   uploadPostImage(post: any, image: File) {
-    const extension = image.type.split('/')[1];
-    const filePath = `posts/${post.uid}/${post.id}.${extension}`;
+    const filePath = `posts/${post.uid}/${post.id}.jpeg`;
     const task = this.afStorage.upload(filePath, image);
 
     return task.snapshotChanges().toPromise();
