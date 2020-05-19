@@ -91,22 +91,54 @@ export class PostService {
 
   getPost(postId: string) {
     return this.afs.doc(`posts/${postId}`).snapshotChanges().pipe(
+      take(1),
       map(doc => doc.payload.data())
     );
-
-    // return this.afs.collection('posts', ref => ref.where('likes', '>=', 1200).orderBy('likes', 'desc'))
-    // .snapshotChanges().pipe(
-    //   map(docs => docs.map(doc => {
-    //     const post = doc.payload.doc.data() as any;
-    //     const id = doc.payload.doc.id;
-
-    //     return { id, ...post };
-    //   }))
-    // );
   }
 
-  deletePost(postId: string) {
-    return this.afs.doc(`posts/${postId}`).delete();
+  deletePost(post: any) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const filePath = `posts/${post.uid}/${post.id}.jpeg`;
+        const task = this.afStorage.ref(filePath).delete();
+        await task.toPromise();
+
+        await this.afs.firestore.runTransaction(async transaction => {
+          const userRef = this.afs.doc(`users/${post.uid}`).ref;
+          const postRef = this.afs.doc(`posts/${post.id}`).ref;
+          const decrement = firestore.FieldValue.increment(-1);
+
+          transaction.update(userRef, { postsCount: decrement });
+          transaction.delete(postRef);
+        });
+
+        resolve(true);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  likePost(post: any, uid: string) {
+    return this.afs.firestore.runTransaction(async transaction => {
+      const postRef = this.afs.doc(`posts/${post.id}`).ref;
+      const increment = firestore.FieldValue.increment(1);
+      const liker = firestore.FieldValue.arrayUnion(uid);
+
+
+      transaction.update(postRef, { likesCount: increment, likes: liker });
+    });
+  }
+
+  dislikePost(post: any, uid: string) {
+    return this.afs.firestore.runTransaction(async transaction => {
+      const postRef = this.afs.doc(`posts/${post.id}`).ref;
+      const decrement = firestore.FieldValue.increment(-1);
+      const unliker = firestore.FieldValue.arrayRemove(uid);
+
+
+      transaction.update(postRef, { likesCount: decrement, likes: unliker });
+    });
   }
 
   updatePost(postId: string, updatedPost: any) {

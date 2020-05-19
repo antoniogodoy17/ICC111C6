@@ -107,26 +107,26 @@ export class ProfilePage implements OnInit {
     const blob = new Blob([int8Array], { type: 'image/jpeg' });
 
     return blob;
- }
+  }
 
- async removePicture(): Promise<boolean> {
-   await this.presentLoading('Removing your profile picture...');
+  async removePicture(): Promise<boolean> {
+    await this.presentLoading('Removing your profile picture...');
 
-   if (this.user.pictureUrl) {
-     this.userService.removeProfilePicture(this.user.id).then(() => {
+    if (this.user.pictureUrl) {
+      this.userService.removeProfilePicture(this.user.id).then(() => {
+        this.dismissLoading();
+        this.presentAlert('Done!', 'Your profile picture has been removed successfully.');
+      }).catch((error) => {
+        this.dismissLoading();
+        this.presentAlert('Error', error.message);
+      });
+    } else {
       this.dismissLoading();
-      this.presentAlert('Done!', 'Your profile picture has been removed successfully.');
-     }).catch((error) => {
-      this.dismissLoading();
-      this.presentAlert('Error', error.message);
-    });
-  } else {
-    this.dismissLoading();
-    this.presentAlert('Error', `You don't have a profile picture yet.`);
-   }
+      this.presentAlert('Error', `You don't have a profile picture yet.`);
+    }
 
-   return;
- }
+    return;
+  }
 
   async presentActionSheet() {
     const actionSheet = await this.actionSheetCtrl.create({

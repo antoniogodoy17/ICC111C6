@@ -1,0 +1,98 @@
+ion-header {
+    ion-title.md {
+        margin-right: 52px;
+    }
+}
+
+ion-content {
+    ion-grid {
+        ion-row.post-header {
+            height: 60px;
+            padding-left: 16px;
+            padding-right: 16px;
+            padding-top: 10px;
+            padding-bottom: 10px;
+
+            ion-col {
+
+                &.post-profile-image {
+                    max-width: 30px;
+                    margin-right: 10px;
+
+                    ion-avatar {
+                        width: 30px;
+                        height: 30px;
+                    }
+                }
+
+                &.post-username a {
+                    font-size: 14px;
+                    font-weight: 600;
+                    color: white;
+                }
+
+                &.post-options-button {
+                    max-width: 30px;
+
+                    ion-button {
+                        color: white;
+                    }
+                }
+            }
+        }
+
+        ion-row.action-buttons {
+            padding-left: 16px;
+            padding-right: 16px;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            
+            ion-button:first-of-type {
+                margin-right: 16px;
+            }
+
+            ion-button {
+                color: white;
+
+                ion-icon.liked {
+                    color: red;
+                }
+            }
+        }
+
+        ion-row.post-likes {
+            padding-left: 16px;
+            padding-right: 16px;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            font-size: 14px;
+
+            span.likes {
+                font-weight: 600;
+            }
+        }
+        
+        ion-row.post-description {
+            padding-left: 16px;
+            padding-right: 16px;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            font-size: 14px;
+
+            a.username {
+                color: white;
+                font-weight: 600;
+            }
+        }
+
+        ion-row.post-footer {
+            padding-left: 16px;
+            padding-right: 16px;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            font-size: 14px;
+            color: lightgray;
+
+        }
+    }
+}

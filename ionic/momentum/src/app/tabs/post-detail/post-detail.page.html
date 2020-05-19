@@ -1,42 +1,80 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Post</ion-title>
-
     <ion-buttons slot="start">
-      <ion-back-button></ion-back-button>
+      <ion-back-button text="" icon="chevron-back-outline"></ion-back-button>
     </ion-buttons>
+
+    <ion-title class="ion-text-center">Post</ion-title>
+
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
 
-  <ion-grid>
-    <ion-row>
-      <ion-col size="2">
-        <ion-avatar>
+  <ion-refresher slot="fixed" (ionRefresh)="refresh($event)">
+    <ion-refresher-content
+      pullingIcon="chevron-down-outline"
+      pullingText="Pull to refresh"
+      refreshingSpinner="lines">
+    </ion-refresher-content>
+  </ion-refresher>
+
+  <ion-grid class="ion-no-padding ion-no-margin">
+    <ion-row class="post-header ion-align-items-center">
+      <ion-col class="post-profile-image">
+        <ion-avatar (click)="goToProfile(post?.uid)">
           <img src="https://gravatar.com/avatar/dba6bae8c566f9d4041fb9cd9ada7741?d=identicon&f=y">
         </ion-avatar>
       </ion-col>
+
+      <ion-col class="post-username">
+        <a (click)="goToProfile(post?.uid)">{{ post?.username }}</a>
+      </ion-col>
+
+      <ion-col class="post-options-button">
+        <ion-button class="ion-no-padding ion-no-margin" fill="clear" (click)="presentActionSheet()">
+          <ion-icon slot="icon-only" name="ellipsis-vertical-outline"></ion-icon>
+        </ion-button>
+      </ion-col>
       
-      <ion-col size="10">@{{ user?.username }}</ion-col>
     </ion-row>
 
     <ion-row>
-      <ion-col size="12">
-        <img [src]="post?.pictureUrl">
+      <ion-col class="ion-no-padding">
+        <img (dblclick)="toggleLike()" [src]="post?.pictureUrl">
       </ion-col>
     </ion-row>
 
-    <ion-row>
-      <ion-col size="12">
-        <ion-icon name="heart-outline"></ion-icon>
-        {{ post?.likesCount | number }} likes
+    <ion-row class="action-buttons">
+      <ion-col>
+        <ion-button (click)="toggleLike()" class="ion-no-padding ion-no-margin" fill="clear">
+          <ion-icon *ngIf="!post?.likes.includes(user?.id)" slot="icon-only" name="heart-outline"></ion-icon>
+          <ion-icon *ngIf="post?.likes.includes(user?.id)" class="liked" slot="icon-only" name="heart"></ion-icon>
+        </ion-button>
+
+        <ion-button class="ion-no-padding ion-no-margin" fill="clear">
+          <ion-icon slot="icon-only" name="chatbubbles-outline"></ion-icon>
+        </ion-button>
       </ion-col>
     </ion-row>
 
-    <ion-row>
-      <ion-col size="12">
-        {{ post?.description }}
+    <ion-row class="post-likes">
+      <ion-col>
+        <span class="likes">{{ post?.likesCount | number }} {{ post?.likesCount === 1 ? 'like' : 'likes' }}</span>
+      </ion-col>
+    </ion-row>
+
+    <ion-row class="post-description">
+      <ion-col>
+        <a (click)="goToProfile(post?.uid)" class="username">{{ post?.username }}</a>
+        &nbsp;
+        <span>{{ post?.description }}</span> 
+      </ion-col>
+    </ion-row>
+
+    <ion-row class="post-footer">
+      <ion-col>
+        <span>{{ post?.createdAt | date }}</span>
       </ion-col>
     </ion-row>
   </ion-grid>
